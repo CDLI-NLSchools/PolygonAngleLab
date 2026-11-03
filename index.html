@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polygon Angle Lab: Math 2201 Unit 8</title>
+<style>
+  :root{
+    --ink:#1c2430; --muted:#5a6572; --accent:#0b5cad; --accent-dark:#084a8a;
+    --ok:#177245; --bad:#b3261e; --card:#ffffff; --bg:#eef2f6; --line:#d4dce4;
+    --soft:#f4f8fc; --warn:#8a5a00;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);line-height:1.45;}
+  .wrap{max-width:779px;margin:0 auto;padding:16px 14px 48px;}
+  header{margin:10px 0 14px;}
+  h1{font-size:1.7rem;margin:0 0 2px;}
+  h2{font-size:1.3rem;margin:0 0 6px;}
+  h3{font-size:1.08rem;margin:14px 0 6px;}
+  .subtitle{color:var(--muted);font-size:1rem;margin:0 0 8px;}
+  .instruction{font-size:1.02rem;margin:0;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:16px;margin:14px 0;box-shadow:0 1px 3px rgba(20,40,60,.06);}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+  button{font:inherit;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;
+    padding:9px 16px;border-radius:8px;min-height:44px;font-weight:600;}
+  button:hover{background:var(--accent-dark);}
+  button.secondary{background:#fff;color:var(--accent);}
+  button.secondary:hover{background:var(--soft);}
+  button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent);}
+  button.secondary[aria-pressed="true"]{background:var(--accent);color:#fff;}
+  button:disabled{opacity:.55;cursor:default;}
+  button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #f2b01e;outline-offset:2px;}
+  .modebtns{display:flex;flex-wrap:wrap;gap:8px;}
+  .field{display:flex;flex-direction:column;gap:3px;margin:10px 0 0;}
+  .field label{font-size:.88rem;color:var(--muted);font-weight:600;}
+  .field input[type=text],.field input[type=number],.field select{padding:9px 10px;font:inherit;font-size:1.02rem;border:1px solid var(--line);
+    border-radius:8px;min-height:44px;background:#fff;}
+  textarea{padding:9px 10px;font:inherit;border:1px solid var(--line);border-radius:8px;width:100%;min-height:84px;background:#fff;}
+  .checkrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 0;}
+  .feedback{margin:12px 0 0;border-radius:10px;padding:12px 14px;display:none;}
+  .feedback.show{display:block;}
+  .feedback.ok{background:#f2faf5;border:1px solid var(--ok);}
+  .feedback.bad{background:#fdf3f2;border:1px solid var(--bad);}
+  .feedback.info{background:var(--soft);border:1px solid var(--line);}
+  .feedback p{margin:4px 0;}
+  .feedback .sumline{font-weight:700;}
+  .feedback.ok .sumline{color:var(--ok);}
+  .feedback.bad .sumline{color:var(--bad);}
+  table.plan{border-collapse:collapse;width:100%;font-size:.98rem;margin:10px 0;}
+  table.plan th,table.plan td{border:1px solid var(--line);padding:6px 10px;text-align:left;}
+  table.plan th{background:var(--soft);}
+  .hidden{display:none !important;}
+  .reqbox{border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:12px 14px;margin:12px 0;}
+  .reqbox p{margin:4px 0;}
+  .bigprompt{font-size:1.1rem;font-weight:600;}
+  .note{color:var(--muted);font-size:.94rem;}
+  .diagram{display:flex;justify-content:center;margin:8px 0;}
+  .diagram svg{max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;}
+  @media (max-width:680px){ .grid2{grid-template-columns:1fr;} h1{font-size:1.4rem;} }
+  #decisionSheet{background:#fff;}
+  #decisionSheet table{border-collapse:collapse;width:100%;font-size:.95rem;margin:10px 0;}
+  #decisionSheet th,#decisionSheet td{border:1px solid var(--line);padding:5px 8px;text-align:left;}
+  #decisionSheet th{background:var(--soft);}
+  @media print{
+    body{background:#fff;}
+    .wrap{max-width:none;padding:0;}
+    body *{visibility:hidden;}
+    #decisionSheet,#decisionSheet *{visibility:visible;}
+    #decisionSheet{position:absolute;left:0;top:0;width:100%;border:none;box-shadow:none;margin:0;padding:0;}
+    #decisionSheet textarea{border:1px solid #999;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Polygon Angle Lab</h1>
+    <p class="subtitle">Math 2201, Unit 8: Properties of Angles and Triangles (Indicator 5.5)</p>
+    <p class="instruction">This is practice: build the interior angle sum rule yourself by triangulating polygons, then run the rule in both directions. Nothing is recorded and nothing leaves this page. Every mode asks for a prediction before it lets you check an answer: committing to a value first is part of the learning.</p>
+  </header>
+
+  <div class="card controls no-print" role="group" aria-label="Choose a mode">
+    <div class="modebtns">
+      <button type="button" id="modeTri" aria-pressed="true">1. Triangulate and Derive</button>
+      <button type="button" id="modeBoth" class="secondary" aria-pressed="false">2. Run the Rule Both Ways</button>
+      <button type="button" id="modeReg" class="secondary" aria-pressed="false">3. Regular Angles</button>
+      <button type="button" id="modeL2" class="secondary" aria-pressed="false">4. Lesson 2 Practice Set</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- Mode 1: Triangulate and Derive -->
+    <section class="card" id="panelTri" aria-labelledby="tHeading">
+      <h2 id="tHeading">Triangulate and Derive</h2>
+      <p>Pick a polygon. Before anything is drawn, predict how many triangles it splits into when every diagonal is drawn from one vertex (V1). Then triangulate it, and watch the pattern table fill in: each triangle contributes 180 degrees, so the counts are the rule in disguise.</p>
+      <div class="controls">
+        <div class="field" style="margin:0;">
+          <label for="tSides">Number of sides</label>
+          <select id="tSides"></select>
+        </div>
+        <button type="button" id="tNew">New polygon</button>
+        <button type="button" id="tRandom" class="secondary">Surprise me</button>
+      </div>
+      <div class="diagram" id="tDiagram"></div>
+      <div class="grid2">
+        <div class="field">
+          <label for="tPredict">My prediction: triangles formed from one vertex</label>
+          <input type="text" inputmode="numeric" id="tPredict" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="tPredictSum">My prediction: sum of the interior angles (degrees)</label>
+          <input type="text" inputmode="numeric" id="tPredictSum" autocomplete="off">
+        </div>
+      </div>
+      <div class="checkrow">
+        <button type="button" id="tGo">Triangulate it</button>
+      </div>
+      <div class="feedback" id="tFeedback" aria-live="polite"></div>
+      <h3>The pattern so far</h3>
+      <div id="tTableWrap"><p class="note">No polygons triangulated yet. Each one you triangulate adds a row.</p></div>
+      <div id="tRuleBox" class="hidden">
+        <div class="field">
+          <label for="tRule">State the rule in your own words (for a polygon with n sides, the sum of the interior angles is...)</label>
+          <textarea id="tRule" placeholder="Write the rule as you see it in the table, before you ask the app to confirm it."></textarea>
+        </div>
+        <div class="checkrow">
+          <button type="button" id="tReveal" class="secondary">Reveal the general rule</button>
+        </div>
+        <div class="feedback" id="tRuleFeedback" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- Drill panels (modes 2, 3, 4 share one engine) -->
+    <section class="card hidden" id="panelDrill" aria-labelledby="dHeading">
+      <h2 id="dHeading">Run the Rule Both Ways</h2>
+      <p id="dIntro"></p>
+      <div class="reqbox">
+        <p class="bigprompt" id="dPrompt"></p>
+      </div>
+      <div class="grid2">
+        <div class="field">
+          <label for="dPredict">My prediction (commit before you work it out)</label>
+          <input type="text" inputmode="decimal" id="dPredict" autocomplete="off">
+        </div>
+        <div id="dFields"></div>
+      </div>
+      <div class="checkrow">
+        <button type="button" id="dCheck">Check</button>
+        <button type="button" id="dNew" class="secondary">New question</button>
+      </div>
+      <div class="feedback" id="dFeedback" aria-live="polite"></div>
+    </section>
+
+    <!-- Generalization Record -->
+    <section class="card" id="decisionSheet" aria-labelledby="dsHeading">
+      <h2 id="dsHeading">Generalization Record</h2>
+      <p class="note no-print">This sheet fills in from your work above: the triangulation table you built, the rule in your own words, and the practice you completed. Print it and submit it to the portfolio folder if your teacher asks for it. The Section 4 portfolio asks for this record with the rule stated in your own words.</p>
+      <div id="dsBody">
+        <p>Nothing recorded yet. Triangulate a polygon above and a table will start here.</p>
+      </div>
+      <div class="field">
+        <label for="dsRule">The rule in my own words (mirrors what you wrote in Triangulate and Derive)</label>
+        <textarea id="dsRule" placeholder="Copied from your statement above; edit it here if you refine it."></textarea>
+      </div>
+      <div class="checkrow no-print">
+        <button type="button" id="printBtn">Print generalization record</button>
+      </div>
+    </section>
+  </main>
+</div>
+<script>
+"use strict";
+// ==GENERATOR==
+// Polygon Angle Lab generator. Pure functions, no DOM. Polygons are convex
+// by construction and by check: vertices are placed in angular order around
+// a centre with bounded radius jitter, and every candidate is verified
+// convex (and its interior angles verified to sum to (n - 2) x 180) before
+// it is served; a regular polygon is the fallback. All drill keys come from
+// the closed forms, and the harness re-derives them independently,
+// including the interior-angle sum measured off the drawn coordinates.
+function makeRng(seed) {
+  if (seed === undefined) seed = (Math.random() * 2147483647) | 0;
+  let state = seed >>> 0;
+  return function () {
+    state = (state + 0x6D2B79F5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function rInt(r, lo, hi) { return lo + Math.floor(r() * (hi - lo + 1)); }
+function rPick(r, arr) { return arr[Math.floor(r() * arr.length)]; }
+function rad(deg) { return deg * Math.PI / 180; }
+
+function polygonConvex(pts) {
+  const n = pts.length;
+  let sign = 0;
+  for (let i = 0; i < n; i++) {
+    const a = pts[i], b = pts[(i + 1) % n], c = pts[(i + 2) % n];
+    const cross = (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]);
+    if (Math.abs(cross) < 1e-9) return false;
+    const s = cross > 0 ? 1 : -1;
+    if (sign === 0) sign = s;
+    else if (s !== sign) return false;
+  }
+  return true;
+}
+function interiorAngleAt(pts, i) {
+  const n = pts.length;
+  const v = pts[i], a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n];
+  const u = [a[0] - v[0], a[1] - v[1]], w = [b[0] - v[0], b[1] - v[1]];
+  const lu = Math.hypot(u[0], u[1]) || 1, lw = Math.hypot(w[0], w[1]) || 1;
+  let dot = (u[0] * w[0] + u[1] * w[1]) / (lu * lw);
+  dot = Math.max(-1, Math.min(1, dot));
+  return Math.acos(dot) * 180 / Math.PI;
+}
+function interiorSum(pts) {
+  let s = 0;
+  for (let i = 0; i < pts.length; i++) s += interiorAngleAt(pts, i);
+  return s;
+}
+function regularPoints(n) {
+  const pts = [], C = [190, 158];
+  for (let i = 0; i < n; i++) {
+    const a = rad(-90 + i * 360 / n);
+    pts.push([C[0] + 106 * Math.cos(a), C[1] + 106 * Math.sin(a)]);
+  }
+  return pts;
+}
+function polyPoints(n, rng) {
+  const r = rng || makeRng();
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const C = [190, 158];
+    const base = 360 / n;
+    const steps = [];
+    let total = 0;
+    for (let i = 0; i < n; i++) { const st = base * (0.62 + r() * 0.76); steps.push(st); total += st; }
+    const pts = [];
+    let ang = -90 - base / 2 + r() * base;
+    for (let i = 0; i < n; i++) {
+      const radius = 88 + r() * 29;
+      const a = rad(ang);
+      pts.push([C[0] + radius * Math.cos(a), C[1] + radius * Math.sin(a)]);
+      ang += steps[i] * 360 / total;
+    }
+    if (polygonConvex(pts) && Math.abs(interiorSum(pts) - (n - 2) * 180) < 0.5) return pts;
+  }
+  return regularPoints(n);
+}
+var POLY_N_CHOICES = [3, 4, 5, 6, 7, 8, 9, 10, 12];
+function genPolygonItem(rng, nOpt) {
+  const r = rng || makeRng();
+  const n = nOpt || rPick(r, [3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 10, 12]);
+  return { n: n, points: polyPoints(n, r), diagonals: n - 3, triangles: n - 2, sum: (n - 2) * 180 };
+}
+
+// Regular n values whose interior and exterior angles are whole degrees.
+var REG_OK = [3, 4, 5, 6, 8, 9, 10, 12, 15, 18, 20, 24, 30, 36, 45, 60];
+// Drill pools exclude the assessed instances (Checkpoint 4 and Test), so
+// practice never serves a checkpoint or test item: sum/sides drop
+// n = 7, 8, 9, 10, 12; regint drops n = 8, 10; regexterior drops n = 6.
+var SUM_SIDES_N = [3, 4, 5, 6, 11, 13, 14, 15];
+var REGINT_OK = REG_OK.filter(function (n) { return n !== 8 && n !== 10; });
+var REGEXT_OK = REG_OK.filter(function (n) { return n !== 6; });
+var DRILL_KINDS = ["sum", "sides", "regint", "regexterior", "reginv", "tricount"];
+
+function makeDrill(kind, rng) {
+  const r = rng || makeRng();
+  if (kind === "sum") {
+    const n = rPick(r, SUM_SIDES_N);
+    return { kind: kind, headline: "Sum from sides", n: n,
+      promptText: "A polygon has " + n + " sides. What is the sum of its interior angles?",
+      fields: [{ id: "ans", label: "Sum of the interior angles (degrees)" }],
+      answers: { ans: (n - 2) * 180 },
+      explain: "(" + n + " - 2) x 180 = " + ((n - 2) * 180) + " degrees: triangulating from one vertex gives " + (n - 2) + " triangles." };
+  }
+  if (kind === "sides") {
+    const n = rPick(r, SUM_SIDES_N), sum = (n - 2) * 180;
+    return { kind: kind, headline: "Sides from sum", n: n,
+      promptText: "The interior angles of a polygon sum to " + sum + " degrees. How many sides does the polygon have?",
+      fields: [{ id: "ans", label: "Number of sides" }],
+      answers: { ans: n },
+      explain: sum + " / 180 = " + (n - 2) + " triangles, and triangles = sides - 2, so the polygon has " + n + " sides." };
+  }
+  if (kind === "regint") {
+    const n = rPick(r, REGINT_OK), val = (n - 2) * 180 / n;
+    return { kind: kind, headline: "Regular interior angle", n: n,
+      promptText: "A regular polygon has " + n + " sides. What is the measure of one interior angle?",
+      fields: [{ id: "ans", label: "One interior angle (degrees)" }],
+      answers: { ans: val },
+      explain: "The sum is (" + n + " - 2) x 180 = " + ((n - 2) * 180) + " degrees, shared equally among " + n + " angles: " + val + " degrees each." };
+  }
+  if (kind === "regexterior") {
+    const n = rPick(r, REGEXT_OK), val = 360 / n;
+    return { kind: kind, headline: "Regular exterior angle", n: n,
+      promptText: "A regular polygon has " + n + " sides. What is the measure of one exterior angle?",
+      fields: [{ id: "ans", label: "One exterior angle (degrees)" }],
+      answers: { ans: val },
+      explain: "Exterior angles of any convex polygon sum to 360 degrees, shared equally: 360 / " + n + " = " + val + " degrees." };
+  }
+  if (kind === "reginv") {
+    const n = rPick(r, REG_OK), interior = (n - 2) * 180 / n, ext = 360 / n;
+    return { kind: kind, headline: "Sides from a regular interior angle", n: n,
+      promptText: "Each interior angle of a regular polygon measures " + interior + " degrees. How many sides does the polygon have?",
+      fields: [{ id: "ans", label: "Number of sides" }],
+      answers: { ans: n },
+      explain: "One exterior angle is 180 - " + interior + " = " + ext + " degrees, and exterior angles sum to 360, so the polygon has 360 / " + ext + " = " + n + " sides." };
+  }
+  // tricount
+  const n = rInt(r, 4, 12);
+  return { kind: kind, headline: "Triangulation counts", n: n,
+    promptText: "Every diagonal is drawn from one vertex of a polygon with " + n + " sides. How many diagonals are drawn, and into how many triangles is the polygon split?",
+    fields: [{ id: "diag", label: "Diagonals drawn from the one vertex" }, { id: "tri", label: "Triangles formed" }],
+    answers: { diag: n - 3, tri: n - 2 },
+    explain: "From one vertex, diagonals cannot go to the vertex itself or its two neighbours: " + n + " - 3 = " + (n - 3) + " diagonals, making " + n + " - 2 = " + (n - 2) + " triangles." };
+}
+function genDrillForMode(mode, rng) {
+  const r = rng || makeRng();
+  if (mode === "both") return makeDrill(rPick(r, ["sum", "sides"]), r);
+  if (mode === "reg") return makeDrill(rPick(r, ["regint", "regexterior", "reginv"]), r);
+  return makeDrill(rPick(r, DRILL_KINDS), r);
+}
+
+// ---------- SVG ----------
+
+function fmt(n) { return Math.round(n * 10) / 10; }
+function buildPolygonSVG(points, showDiagonals) {
+  const n = points.length;
+  let cx = 0, cy = 0;
+  points.forEach((p) => { cx += p[0]; cy += p[1]; });
+  cx /= n; cy /= n;
+  let out = '<svg viewBox="0 0 380 316" width="380" height="316" role="img" aria-label="Polygon diagram">';
+  if (showDiagonals) {
+    for (let i = 2; i <= n - 2; i++) {
+      out += '<line x1="' + fmt(points[0][0]) + '" y1="' + fmt(points[0][1]) + '" x2="' + fmt(points[i][0]) + '" y2="' + fmt(points[i][1]) + '" stroke="#0b5cad" stroke-width="1.8" stroke-dasharray="6 4"/>';
+    }
+  }
+  out += '<polygon points="' + points.map((p) => fmt(p[0]) + "," + fmt(p[1])).join(" ") + '" fill="#f4f8fc" stroke="#1c2430" stroke-width="2.2"/>';
+  points.forEach((p, i) => {
+    let dx = p[0] - cx, dy = p[1] - cy;
+    const len = Math.hypot(dx, dy) || 1;
+    dx = dx / len * 17; dy = dy / len * 17;
+    out += '<circle cx="' + fmt(p[0]) + '" cy="' + fmt(p[1]) + '" r="3.4" fill="' + (i === 0 ? "#c2510a" : "#1c2430") + '"/>';
+    out += '<text x="' + fmt(p[0] + dx) + '" y="' + fmt(p[1] + dy + 5) + '" font-size="13.5" font-weight="600" fill="' + (i === 0 ? "#c2510a" : "#1c2430") + '" text-anchor="middle">V' + (i + 1) + "</text>";
+  });
+  out += "</svg>";
+  return out;
+}
+// ==END GENERATOR==
+</script>
+<script>
+"use strict";
+// UI layer. Generator above is the single source of truth for items and keys.
+const $ = (id) => document.getElementById(id);
+function showFb(el, kind, html) { el.className = "feedback show " + kind; el.innerHTML = html; }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function numEq(v, key) { return isFinite(v) && Math.abs(v - key) <= 0.51; }
+
+// ---------- Mode tabs ----------
+
+const MODES = { tri: "panelTri", both: "panelDrill", reg: "panelDrill", l2: "panelDrill" };
+let currentMode = "tri";
+function setMode(m) {
+  currentMode = m;
+  ["tri", "both", "reg", "l2"].forEach((k) => {
+    const btn = $("mode" + k.charAt(0).toUpperCase() + k.slice(1));
+    btn.setAttribute("aria-pressed", k === m ? "true" : "false");
+    btn.classList.toggle("secondary", k !== m);
+  });
+  $("panelTri").classList.toggle("hidden", m !== "tri");
+  $("panelDrill").classList.toggle("hidden", m === "tri");
+  if (m !== "tri") startDrills(m);
+}
+$("modeTri").addEventListener("click", () => setMode("tri"));
+$("modeBoth").addEventListener("click", () => setMode("both"));
+$("modeReg").addEventListener("click", () => setMode("reg"));
+$("modeL2").addEventListener("click", () => setMode("l2"));
+
+// ---------- Mode 1: Triangulate and Derive ----------
+
+let tItem = null, tDone = false;
+const tRows = new Map();
+let ruleRevealed = false;
+
+POLY_N_CHOICES.forEach((n) => {
+  const opt = document.createElement("option");
+  opt.value = String(n); opt.textContent = n + " sides";
+  if (n === 5) opt.selected = true;
+  $("tSides").appendChild(opt);
+});
+
+function loadPolygon(nOpt) {
+  tItem = genPolygonItem(undefined, nOpt);
+  tDone = false;
+  $("tDiagram").innerHTML = buildPolygonSVG(tItem.points, false);
+  $("tPredict").value = "";
+  $("tPredictSum").value = "";
+  $("tGo").disabled = false;
+  showFb($("tFeedback"), "info", "<p>An " + tItem.n + "-sided polygon. Predict the triangle count and the angle sum first, then triangulate.</p>");
+}
+$("tNew").addEventListener("click", () => loadPolygon(parseInt($("tSides").value, 10)));
+$("tRandom").addEventListener("click", () => {
+  let n = tItem ? tItem.n : 5, guard = 0;
+  while (n === (tItem ? tItem.n : -1) && guard++ < 12) n = POLY_N_CHOICES[Math.floor(Math.random() * POLY_N_CHOICES.length)];
+  $("tSides").value = String(n);
+  loadPolygon(n);
+});
+
+$("tGo").addEventListener("click", () => {
+  if (tDone) return;
+  const pt = parseFloat($("tPredict").value), ps = parseFloat($("tPredictSum").value);
+  if (!isFinite(pt) || !isFinite(ps)) {
+    showFb($("tFeedback"), "bad", "<p class=\"sumline\">Commit to both predictions first.</p><p>The count and the sum: a guess you have written down teaches more than a reveal you have only watched.</p>");
+    return;
+  }
+  tDone = true;
+  $("tGo").disabled = true;
+  $("tDiagram").innerHTML = buildPolygonSVG(tItem.points, true);
+  tRows.set(tItem.n, { n: tItem.n, diagonals: tItem.diagonals, triangles: tItem.triangles, sum: tItem.sum });
+  renderTriTable();
+  renderRecord();
+  const triOk = numEq(pt, tItem.triangles), sumOk = numEq(ps, tItem.sum);
+  let msg = "<p class=\"sumline\">" + (triOk && sumOk ? "Both predictions land exactly." : "Triangulated. Compare your predictions with the figure.") + "</p>";
+  msg += "<p>Diagonals from V1: " + tItem.diagonals + ". Triangles formed: " + tItem.triangles + " (you predicted " + pt + "). Each triangle's angles sum to 180 degrees, and the triangles exactly fill the polygon, so the interior angles sum to " + tItem.triangles + " x 180 = " + tItem.sum + " degrees (you predicted " + ps + ").</p>";
+  if (!triOk) msg += "<p>For the count: from one vertex, diagonals cannot reach the vertex itself or its two neighbours, so an n-sided polygon gives n - 3 diagonals and n - 2 triangles.</p>";
+  showFb($("tFeedback"), triOk && sumOk ? "ok" : "info", msg);
+  if (tRows.size >= 3) $("tRuleBox").classList.remove("hidden");
+});
+
+function triTableHTML() {
+  const rows = Array.from(tRows.values()).sort((a, b) => a.n - b.n);
+  let h = "<table class=\"plan\"><tr><th>Sides (n)</th><th>Diagonals from one vertex</th><th>Triangles</th><th>Sum of interior angles</th></tr>";
+  rows.forEach((r) => { h += "<tr><td>" + r.n + "</td><td>" + r.diagonals + "</td><td>" + r.triangles + "</td><td>" + r.sum + " degrees</td></tr>"; });
+  return h + "</table>";
+}
+function renderTriTable() { $("tTableWrap").innerHTML = triTableHTML(); }
+
+$("tRule").addEventListener("input", () => { $("dsRule").value = $("tRule").value; renderRecord(); });
+$("dsRule").addEventListener("input", () => { $("tRule").value = $("dsRule").value; });
+
+$("tReveal").addEventListener("click", () => {
+  if (!$("tRule").value.trim()) {
+    showFb($("tRuleFeedback"), "bad", "<p class=\"sumline\">State your rule first.</p><p>Write what the table is telling you, in your own words; then compare it with the general rule.</p>");
+    return;
+  }
+  ruleRevealed = true;
+  showFb($("tRuleFeedback"), "ok", "<p class=\"sumline\">The general rule: for a polygon with n sides, the sum of the interior angles is (n - 2) x 180 degrees.</p><p>Compare it with yours. The triangles column in your table is n - 2 every time, and each triangle carries 180 degrees: that is the whole derivation. For a regular polygon, one interior angle is that sum shared equally, (n - 2) x 180 / n, and one exterior angle is 360 / n.</p>");
+  renderRecord();
+});
+
+// ---------- Modes 2 to 4: the drill engine ----------
+
+const DRILL_INTROS = {
+  both: ["Run the Rule Both Ways", "Given the sides, find the sum; given the sum, find the sides. Predict first, every time."],
+  reg: ["Regular Angles", "Regular polygons: interior and exterior angles, and back again from an angle to the side count. Predict first, every time."],
+  l2: ["Lesson 2 Practice Set", "This set carries the full both-ways practice for Section 4: triangulation counts, sums in both directions, and regular angles, mixed together. It is the practice the pacing note points to if Section 4 runs as one lesson. Predict first, every time."]
+};
+let drillMode = "both", drill = null, drillAttempts = 0;
+const drillsLog = [];
+
+function startDrills(mode) {
+  drillMode = mode;
+  $("dHeading").textContent = DRILL_INTROS[mode][0];
+  $("dIntro").textContent = DRILL_INTROS[mode][1];
+  newDrill();
+}
+function newDrill() {
+  drill = genDrillForMode(drillMode);
+  drillAttempts = 0;
+  $("dPrompt").textContent = drill.promptText;
+  const box = $("dFields");
+  box.innerHTML = "";
+  drill.fields.forEach((f) => {
+    const wrap = document.createElement("div");
+    wrap.className = "field";
+    const lab = document.createElement("label");
+    lab.htmlFor = "dField_" + f.id;
+    lab.textContent = f.label;
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.inputMode = "decimal"; inp.id = "dField_" + f.id; inp.autocomplete = "off";
+    wrap.appendChild(lab); wrap.appendChild(inp);
+    box.appendChild(wrap);
+  });
+  $("dPredict").value = "";
+  showFb($("dFeedback"), "info", "<p>Commit to a prediction for \"" + esc(drill.fields[0].label.toLowerCase()) + "\" first, then work the answer out.</p>");
+}
+$("dNew").addEventListener("click", newDrill);
+
+$("dCheck").addEventListener("click", () => {
+  const pred = parseFloat($("dPredict").value);
+  const fb = $("dFeedback");
+  if (!isFinite(pred)) {
+    showFb(fb, "bad", "<p class=\"sumline\">Prediction first.</p><p>Write the value you expect before you check the worked answer.</p>");
+    return;
+  }
+  const wrong = [];
+  drill.fields.forEach((f) => {
+    const v = parseFloat($("dField_" + f.id).value);
+    if (!numEq(v, drill.answers[f.id])) wrong.push(f.label);
+  });
+  if (!wrong.length) {
+    const predField = drill.fields[0];
+    const predDiff = Math.abs(pred - drill.answers[predField.id]);
+    drillsLog.push({ drill: drill });
+    renderRecord();
+    showFb(fb, "ok", "<p class=\"sumline\">Correct: " + drill.fields.map((f) => f.label.toLowerCase() + " = " + drill.answers[f.id]).join(", ") + ".</p><p>" + esc(drill.explain) + "</p><p>Your prediction for " + esc(predField.label.toLowerCase()) + " was " + pred + " (" + (predDiff === 0 ? "exactly right" : "off by " + Math.round(predDiff * 10) / 10) + ").</p>");
+    newDrillSoon();
+  } else {
+    drillAttempts++;
+    let msg = "<p class=\"sumline\">Not yet: " + esc(wrong.join(" and ")) + (wrong.length > 1 ? " are" : " is") + " off.</p>";
+    if (drillAttempts >= 2) msg += "<p>Work it through: " + esc(drill.explain) + "</p>";
+    else msg += "<p>Check the direction of the rule you used: are you building the answer from n, or recovering n from the answer?</p>";
+    showFb(fb, "bad", msg);
+  }
+});
+function newDrillSoon() { /* keep the solved drill visible; the student asks for the next one */ }
+
+// ---------- Record ----------
+
+function renderRecord() {
+  if (!tRows.size && !drillsLog.length) return;
+  let h = "";
+  if (tRows.size) {
+    h += "<h3>My triangulation table</h3>" + triTableHTML();
+  }
+  const rule = $("dsRule").value.trim();
+  if (rule) h += "<h3>The rule in my own words</h3><p>" + esc(rule) + "</p>";
+  if (ruleRevealed) h += "<p>The general rule, as confirmed by the app: for a polygon with n sides, the sum of the interior angles is (n - 2) x 180 degrees.</p>";
+  if (drillsLog.length) {
+    h += "<h3>Practice completed (" + drillsLog.length + ")</h3><ul>";
+    drillsLog.forEach((entry) => {
+      h += "<li>" + esc(entry.drill.headline) + ": " + esc(entry.drill.promptText) + " Answer: " + entry.drill.fields.map((f) => f.label.toLowerCase() + " = " + entry.drill.answers[f.id]).join(", ") + ".</li>";
+    });
+    h += "</ul>";
+  }
+  $("dsBody").innerHTML = h;
+}
+$("printBtn").addEventListener("click", () => window.print());
+
+loadPolygon(5);
+</script>
+</body>
+</html>
